@@ -1,0 +1,13 @@
+{
+  "cSpell.enabled": false,
+  "cSpell.ignorePaths": ["node_modules/**", ".next/**"],
+  "chat.tools.terminal.autoApprove": {
+    "pnpm": true,
+    "git checkout": true,
+    "git remote": true,
+    "git rev-parse": true,
+    "gh": true,
+    "Set-Content": true,
+    "git push": true
+  }
+}
