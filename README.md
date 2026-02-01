@@ -78,13 +78,6 @@ License
 
 - Add an appropriate LICENSE file (e.g. MIT) if you plan to publish the project.
 
-Need more?
-If you'd like, I can:
-
-- Add a concise English + Arabic README split, or
-- Add `CONTRIBUTING.md` and PR/issue templates, or
-- Commit these changes to a new Git branch and open a PR locally for review.
-
 ## License
 This project is licensed under the MIT License — see the [LICENSE](./LICENSE) file for details.
 Copyright (c) 2026 Nour Al-Iman
