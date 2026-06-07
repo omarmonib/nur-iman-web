@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import { useAudioManager } from '@/context/AudioManager';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { getAyahImageUrl, getAyahAudioUrl } from '@/types/quran';
+import { getAyahImageUrl, getAyahAudioUrl, getSurahAudioUrl } from '@/lib/quranCdn';
 import type { LastRead } from '@/components/home/LastReadSurah';
 
 type Props = {
@@ -56,10 +56,34 @@ export default function QuranSurahImages({
 
   const ayahs = Array.from({ length: numberOfAyahs }, (_, i) => i + 1);
 
+  const surahAudioUrl = getSurahAudioUrl(surahNumber, reciter);
+  const isSurahPlaying = isPlaying(surahAudioUrl);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-border">
-        <p className="text-sm text-muted-foreground">اضغط على أي آية للاستماع إليها</p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => toggle(surahAudioUrl)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+              isSurahPlaying
+                ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                : 'border border-border hover:bg-muted'
+            }`}
+          >
+            {isSurahPlaying ? (
+              <>
+                <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
+                إيقاف السورة
+              </>
+            ) : (
+              '▶ تشغيل السورة كاملة'
+            )}
+          </button>
+          <p className="text-sm text-muted-foreground hidden sm:block">
+            أو اضغط على آية للاستماع إليها
+          </p>
+        </div>
         <button
           onClick={() => setHighRes((v) => !v)}
           className="text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-muted transition"

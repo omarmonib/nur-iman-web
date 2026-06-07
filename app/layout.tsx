@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono, Tajawal, Amiri, Scheherazade_New } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
@@ -6,6 +6,7 @@ import PrayerBar from '@/components/layout/PrayerBar';
 import Footer from '@/components/layout/Footer';
 import { ThemeProvider } from '@/components/ui/ThemeProvider';
 import { AudioManagerProvider } from '@/context/AudioManager';
+import ServiceWorkerRegister from '@/components/pwa/ServiceWorkerRegister';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin', 'latin-ext'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin', 'latin-ext'] });
@@ -30,7 +31,20 @@ const scheherazade = Scheherazade_New({
 
 export const metadata: Metadata = {
   title: 'نور الايمان',
-  description: 'A modern Islamic web application.',
+  description: 'تطبيق إسلامي شامل — القرآن الكريم، الأذكار، مواقيت الصلاة',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'نور الايمان',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#059669',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -49,9 +63,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           disableTransitionOnChange
         >
           <AudioManagerProvider>
+            <ServiceWorkerRegister />
             <Navbar />
             <PrayerBar />
-            {/* pt-24 = 16 (navbar h-16) + 8 (prayer bar h-8) */}
             <main className="min-h-screen pt-24 container mx-auto">{children}</main>
             <Footer />
           </AudioManagerProvider>

@@ -5,7 +5,7 @@ import SurahListDialog from '@/components/quran/SurahListDialog';
 import ReciterSelector from '@/components/quran/ReciterSelector';
 import { fetchSurahMeta } from '@/lib/quranApi';
 import { DEFAULT_RECITER } from '@/lib/constants/reciters';
-import { getFirstAyahGlobalNumber } from '@/types/quran';
+import { getFirstAyahGlobalNumber } from '@/lib/quranCdn';
 import { notFound } from 'next/navigation';
 
 type Params = { surah: string };
