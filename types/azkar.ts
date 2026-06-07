@@ -1,11 +1,19 @@
-export interface DhikrItem {
+export interface AzkarItem {
+  id: number;
   text: string;
-  count: number;
+  count?: number;
+  audio?: string;
+  filename?: string;
+  description?: string;
 }
 
-export interface DhikrSection {
-  title: string;
-  items: DhikrItem[];
+export interface AzkarSection {
+  id: number;
+  category: string;
+  title?: string;
+  audio?: string;
+  filename?: string;
+  array: AzkarItem[];
 }
 
-export type AdhkarData = Record<string, DhikrSection>;
+export type AzkarData = AzkarSection[];

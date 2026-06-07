@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { Card } from '../ui/card';
 import Countdown from '@/components/ui/Countdown';
-import  CitySelector  from './CitySelector';
+import CitySelector from './CitySelector';
 import { usePrayerTimes } from '@/hooks/usePrayerTimes';
 import { Spinner } from '../ui/spinner';
-import { PRAYERS_ORDER, PRAYER_LABELS } from '@/lib/prayers';
+import { PRAYERS_ORDER, PRAYER_LABELS } from '@/lib/constants/prayers';
 
 export default function PrayerTimesCard() {
   const [city, setCity] = useState('Cairo');
@@ -27,7 +27,6 @@ export default function PrayerTimesCard() {
   return (
     <Card className="relative overflow-hidden rounded-xl border border-border p-4 space-y-4 bg-card">
       <div className="relative z-10 space-y-4">
-        {/* Header */}
         <div className="flex justify-between items-center">
           <div className="text-center">
             <Countdown seconds={nextPrayer.remainingSeconds} />
@@ -35,14 +34,12 @@ export default function PrayerTimesCard() {
               يتبقى على {PRAYER_LABELS[nextPrayer.name]}
             </p>
           </div>
-
           <div className="text-center text-foreground">
             <p className="text-3xl font-bold">{day}</p>
             <p className="text-sm opacity-80">{rest.join(' ')}</p>
           </div>
         </div>
 
-        {/* Prayer times */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
           {PRAYERS_ORDER.map((p) => (
             <div
@@ -59,7 +56,6 @@ export default function PrayerTimesCard() {
           ))}
         </div>
 
-        {/* City */}
         <div className="flex justify-end">
           <CitySelector value={city} onChange={setCity} />
         </div>

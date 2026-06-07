@@ -1,19 +1,16 @@
 'use client';
 
-import {  useState } from 'react';
+import { useState } from 'react';
 import { useAzkar } from '@/hooks/useAzkar';
 import { AzkarTabs } from '@/components/azkar/AzkarTabs';
-import { AzkarCard } from '@/components/azkar/AzkarCard';
+import AzkarCard from '@/components/azkar/AzkarCard';
 
 export default function AzkarList() {
   const { data, loading, error } = useAzkar();
-  const keys = Object.keys(data);
-  const [active, setActive] = useState<string>(''); // store user-selected key
+  const [active, setActive] = useState<string>('');
 
-  // derive the current active key for rendering without causing state updates in effects
-  const current = (active || keys[0]) ?? '';
-
-  const section = data[current] ?? { title: '', items: [] };
+  const current = active || data[0]?.category || '';
+  const section = data.find((s) => s.category === current) ?? data[0];
 
   return (
     <div className="container max-w-3xl py-6 space-y-6">
@@ -22,15 +19,15 @@ export default function AzkarList() {
       <AzkarTabs
         active={current}
         onChange={setActive}
-        sections={keys.map((k) => ({ key: k, title: data[k].title }))}
+        sections={data.map((s) => ({ key: s.category, title: s.title ?? s.category }))}
       />
 
       {loading && <div className="text-sm text-primary">جاري تحميل الأذكار...</div>}
       {error && <div className="text-sm text-destructive">{error}</div>}
 
       <div className="space-y-4">
-        {section.items.map((item, i) => (
-          <AzkarCard key={i} item={item} />
+        {section?.array.map((item) => (
+          <AzkarCard key={item.id} item={item} />
         ))}
       </div>
     </div>

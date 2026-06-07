@@ -79,9 +79,8 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  /* Mushaf theme variables (light) */
-  --mushaf-verse-bg: #f5c46b; /* warm gold */
-  --mushaf-verse-fg: #111827; /* dark text */
+  --mushaf-verse-bg: #f5c46b;
+  --mushaf-verse-fg: #111827;
   --mushaf-active-bg: rgba(245, 196, 107, 0.15);
   --mushaf-active-ring: rgba(245, 196, 107, 0.12);
   --mushaf-text: #0f172a;
@@ -120,12 +119,11 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
   --bg-overlay: rgba(0, 0, 0, 0.55);
-  /* Mushaf theme variables (dark) */
-  --mushaf-verse-bg: #b98a2b; /* slightly muted gold */
-  --mushaf-verse-fg: #0f172a; /* keep verse number readable */
+  --mushaf-verse-bg: #b98a2b;
+  --mushaf-verse-fg: #0f172a;
   --mushaf-active-bg: rgba(185, 138, 43, 0.12);
   --mushaf-active-ring: rgba(185, 138, 43, 0.14);
-  --mushaf-text: oklch(0.985 0 0); /* use foreground (light) */
+  --mushaf-text: oklch(0.985 0 0);
 }
 
 @layer base {
@@ -141,16 +139,6 @@
   filter: invert(36%) sepia(74%) saturate(4000%) hue-rotate(150deg) brightness(95%) contrast(90%);
 }
 
-main,
-header,
-footer,
-nav,
-.container {
-  position: relative;
-  z-index: 10;
-}
-
-/* Mushaf (Madinah) styling */
 .mushaf {
   direction: rtl;
   text-align: center;
@@ -158,6 +146,7 @@ nav,
   line-height: 1.9;
   font-family: 'Scheherazade New', 'Amiri', serif;
   letter-spacing: 0.02em;
+  color: var(--mushaf-text, var(--foreground));
 }
 
 .mushaf .ayah {
@@ -179,14 +168,8 @@ nav,
   font-size: 0.75rem;
 }
 
-/* Active ayah (highlighted during playback) */
 .mushaf .ayah.active {
   background: var(--mushaf-active-bg, rgba(245, 196, 107, 0.15));
   box-shadow: 0 0 0 3px var(--mushaf-active-ring, rgba(245, 196, 107, 0.12));
   border-radius: 0.5rem;
-}
-
-/* Mushaf text color using theme variable */
-.mushaf {
-  color: var(--mushaf-text, var(--foreground));
 }

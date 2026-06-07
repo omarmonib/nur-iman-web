@@ -1,56 +1,26 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useAudioManager } from '@/context/AudioManager';
 
 type Props = {
   text: string;
   numberInSurah: number;
   audio?: string;
   isActive?: boolean;
+  onPlay?: () => void;
 };
 
-export default function QuranAyah({ text, numberInSurah, audio, isActive = false }: Props) {
-  const [playing, setPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+export default function QuranAyah({ text, numberInSurah, audio, isActive = false, onPlay }: Props) {
+  const { isPlaying, toggle } = useAudioManager();
 
-  useEffect(() => {
-    if (!isActive && audioRef.current) {
-      // pause any local playback when not active
-      try {
-        audioRef.current.pause();
-      } catch {}
-      // avoid synchronous state update inside effect to prevent cascading renders
-      setTimeout(() => setPlaying(false), 0);
+  const playing = audio ? isPlaying(audio) : false;
+
+  const handleToggle = () => {
+    if (onPlay && !playing) {
+      onPlay();
+    } else if (audio) {
+      toggle(audio);
     }
-  }, [isActive]);
-
-  useEffect(() => {
-    // cleanup on unmount
-    const a = audioRef.current;
-    return () => {
-      try {
-        if (a) {
-          a.pause();
-          a.src = '';
-        }
-      } catch {}
-    };
-  }, []);
-
-  const toggleAudio = async () => {
-    if (!audio) return;
-    if (!audioRef.current) audioRef.current = new Audio(audio);
-
-    try {
-      if (playing) {
-        audioRef.current.pause();
-        setPlaying(false);
-      } else {
-        await audioRef.current.play();
-        setPlaying(true);
-        audioRef.current.onended = () => setTimeout(() => setPlaying(false), 0);
-      }
-    } catch {}
   };
 
   return (
@@ -61,7 +31,7 @@ export default function QuranAyah({ text, numberInSurah, audio, isActive = false
       </span>
       {audio && (
         <div className="mt-2">
-          <button onClick={toggleAudio} className="px-2 py-1 bg-accent/20 rounded text-sm">
+          <button onClick={handleToggle} className="px-2 py-1 bg-accent/20 rounded text-sm">
             {playing ? 'إيقاف' : 'تشغيل'}
           </button>
         </div>

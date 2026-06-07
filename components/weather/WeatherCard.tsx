@@ -7,7 +7,6 @@ type Weather = {
   windspeed: number;
   winddirection: number;
   weathercode: number;
-  time: string;
 };
 
 const weatherCodeMap: Record<number, string> = {
@@ -42,81 +41,85 @@ const CITIES: Record<string, { latitude: number; longitude: number; name: string
   amman: { latitude: 31.9454, longitude: 35.9284, name: 'عمّان' },
 };
 
+type CityKey = keyof typeof CITIES | 'myloc';
+type Coords = { latitude: number; longitude: number; name: string };
+
 export default function WeatherCard({ initial = 'cairo' }: { initial?: string }) {
   const safeInitial = initial && CITIES[initial] ? initial : 'cairo';
-  const [selected, setSelected] = useState<string>(safeInitial);
-  const initialCity = CITIES[safeInitial];
-  const [latitude, setLatitude] = useState<number>(initialCity.latitude);
-  const [longitude, setLongitude] = useState<number>(initialCity.longitude);
-  const [place, setPlace] = useState<string>(initialCity.name);
+
+  const [selected, setSelected] = useState<CityKey>(safeInitial);
+  const [coords, setCoords] = useState<Coords>(CITIES[safeInitial]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [weather, setWeather] = useState<Weather | null>(null);
 
   useEffect(() => {
     let mounted = true;
+    const controller = new AbortController();
 
-    async function load() {
-      setLoading(true);
-      setError(null);
-      try {
-        const resp = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`
-        );
-        if (!resp.ok) throw new Error('فشل تحميل الطقس');
-        const json = await resp.json();
+    fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current_weather=true&timezone=auto`,
+      { signal: controller.signal }
+    )
+      .then((r) => {
+        if (!r.ok) throw new Error('فشل تحميل الطقس');
+        return r.json();
+      })
+      .then((json) => {
+        if (!mounted) return;
         const cw = json.current_weather;
-        if (mounted && cw) {
+        if (cw) {
           setWeather({
             temperature: cw.temperature,
             windspeed: cw.windspeed,
             winddirection: cw.winddirection,
             weathercode: cw.weathercode,
-            time: cw.time,
           });
+          setError(null);
         }
-      } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : String(e);
-        setError(msg || 'حدث خطأ');
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    load();
+        setLoading(false);
+      })
+      .catch((e: unknown) => {
+        if (!mounted) return;
+        if (e instanceof DOMException && e.name === 'AbortError') return;
+        setError(e instanceof Error ? e.message : 'حدث خطأ');
+        setLoading(false);
+      });
 
     return () => {
       mounted = false;
+      controller.abort();
     };
-  }, [latitude, longitude]);
+  }, [coords]);
 
-  useEffect(() => {
-    // when selected city changes, update coords and place
-    const city = CITIES[selected];
-    if (city) {
-      setLatitude(city.latitude);
-      setLongitude(city.longitude);
-      setPlace(city.name);
+  const handleCityChange = (value: string) => {
+    if (value === 'myloc') {
+      getMyLocation();
+      return;
     }
-  }, [selected]);
+    const city = CITIES[value];
+    if (!city) return;
+    setSelected(value);
+    setCoords(city);
+    setLoading(true);
+    setError(null);
+  };
 
-  async function getMyLocation() {
+  const getMyLocation = () => {
     if (!navigator.geolocation) {
       setError('المتصفح لا يدعم تحديد الموقع');
       return;
     }
-
     setLoading(true);
     setError(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        setLatitude(lat);
-        setLongitude(lon);
-        setPlace('موقعي');
-        setSelected('');
-        setLoading(false);
+        setSelected('myloc');
+        setCoords({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          name: 'موقعي',
+        });
       },
       () => {
         setError('فشل الحصول على الموقع');
@@ -124,69 +127,48 @@ export default function WeatherCard({ initial = 'cairo' }: { initial?: string })
       },
       { enableHighAccuracy: false, timeout: 10000 }
     );
-  }
+  };
 
   return (
     <div className="w-full rounded-xl border bg-card p-3 text-primary flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h3 className="text-base font-semibold">الطقس — {place}</h3>
+          <h3 className="text-base font-semibold">الطقس — {coords.name}</h3>
           <p className="text-xs text-muted-foreground">المصدر: Open-Meteo</p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <select
-            value={selected}
-            onChange={(e) => {
-              const v = e.target.value;
-              if (v === '__myloc') {
-                getMyLocation();
-              } else {
-                setSelected(v);
-              }
-            }}
-            className="rounded-md border px-2 py-1 text-sm"
-            aria-label="اختر المدينة"
-          >
-            {Object.entries(CITIES).map(([key, c]) => (
-              <option key={key} value={key}>
-                {c.name}
-              </option>
-            ))}
-            <option value="__myloc">موقعي</option>
-          </select>
-          <button
-            type="button"
-            className="text-sm px-2 py-1 rounded-md border"
-            onClick={() => getMyLocation()}
-            title="استخدم موقعي"
-          >
-            موقعي
-          </button>
-        </div>
+        <select
+          value={selected}
+          onChange={(e) => handleCityChange(e.target.value)}
+          className="rounded-md border px-2 py-1 text-sm"
+          aria-label="اختر المدينة"
+        >
+          {Object.entries(CITIES).map(([key, c]) => (
+            <option key={key} value={key}>
+              {c.name}
+            </option>
+          ))}
+          <option value="myloc">{selected === 'myloc' ? 'موقعي ✓' : 'موقعي'}</option>
+        </select>
       </div>
 
       {loading && <div className="text-sm opacity-80">جاري التحميل...</div>}
-
       {error && <div className="text-sm text-destructive">{error}</div>}
 
-      {weather && (
+      {weather && !loading && (
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col">
             <span className="text-2xl font-bold">{Math.round(weather.temperature)}°C</span>
             <span className="text-sm opacity-80">درجة الحرارة الحالية</span>
           </div>
-
           <div className="flex flex-col items-start">
             <span className="text-sm">{weatherCodeMap[weather.weathercode] ?? '—'}</span>
             <span className="text-xs opacity-80">حالة السماء</span>
           </div>
-
           <div className="flex flex-col">
             <span className="text-sm">{weather.windspeed} m/s</span>
             <span className="text-xs opacity-80">سرعة الرياح</span>
           </div>
-
           <div className="flex flex-col">
             <span className="text-sm">{Math.round(weather.winddirection)}°</span>
             <span className="text-xs opacity-80">اتجاه الرياح</span>

@@ -4,15 +4,16 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { ThemeProvider } from '@/components/ui/ThemeProvider';
+import { AudioManagerProvider } from '@/context/AudioManager';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
-  subsets: ['latin', 'latin-ext'], // remove 'arabic'
+  subsets: ['latin', 'latin-ext'],
 });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
-  subsets: ['latin', 'latin-ext'], // remove 'arabic'
+  subsets: ['latin', 'latin-ext'],
 });
 
 const tajawal = Tajawal({
@@ -50,21 +51,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       suppressHydrationWarning
     >
       <body>
-        {/* ThemeProvider for Dark/Light mode using next-themes */}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {/* Navbar fixed */}
-          <Navbar />
-
-          {/* Main content - pad top to account for fixed navbar (h-16) */}
-          <main className="min-h-screen pt-16 container mx-auto relative z-10">{children}</main>
-
-          {/* Footer fixed */}
-          <Footer />
+          <AudioManagerProvider>
+            <Navbar />
+            <main className="min-h-screen pt-16 container mx-auto relative z-10">{children}</main>
+            <Footer />
+          </AudioManagerProvider>
         </ThemeProvider>
       </body>
     </html>
