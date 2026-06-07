@@ -2,12 +2,17 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAudioManager } from '@/context/AudioManager';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import type { LastRead } from '@/components/home/LastReadSurah';
 import QuranAyah from './QuranAyah';
 
 type AyahItem = { text: string; numberInSurah: number; audio?: string };
 
 type Props = {
   ayahs: AyahItem[];
+  surahNumber: number;
+  surahName: string;
+  surahEnglishName: string;
 };
 
 function pad(n: number) {
@@ -21,13 +26,13 @@ function formatTime(seconds: number) {
   return `${pad(m)}:${pad(s)}`;
 }
 
-export default function QuranSurah({ ayahs }: Props) {
+export default function QuranSurah({ ayahs, surahNumber, surahName, surahEnglishName }: Props) {
   const { play, pause, seek, isPlaying, progress, duration, src } = useAudioManager();
+  const [, setLastRead] = useLocalStorage<LastRead | null>('last-read-surah', null);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const ayahRefs = useRef<Array<HTMLDivElement | null>>([]);
 
-  // Keep a stable ref to ayahs so the onEnded callback never goes stale
   const ayahsRef = useRef(ayahs);
   useEffect(() => {
     ayahsRef.current = ayahs;
@@ -43,29 +48,36 @@ export default function QuranSurah({ ayahs }: Props) {
     [play]
   );
 
-  // Auto-advance to next ayah when current one finishes
   const currentIndexRef = useRef(currentIndex);
   useEffect(() => {
     currentIndexRef.current = currentIndex;
   }, [currentIndex]);
 
+  // Save reading progress whenever the active ayah changes
+  useEffect(() => {
+    const ayah = ayahs[currentIndex];
+    if (!ayah) return;
+    setLastRead({
+      number: surahNumber,
+      name: surahName,
+      englishName: surahEnglishName,
+      ayah: ayah.numberInSurah,
+    });
+  }, [currentIndex, ayahs, surahNumber, surahName, surahEnglishName, setLastRead]);
+
   const currentSrc = ayahs[currentIndex]?.audio;
   const isCurrentPlaying = currentSrc ? isPlaying(currentSrc) : false;
 
-  // Detect when AudioManager finishes the current ayah's src
   useEffect(() => {
     if (src !== currentSrc) return;
     if (isCurrentPlaying) return;
     if (progress === 0 && duration === 0) return;
-
-    // Audio ended — advance to next ayah
     const next = currentIndexRef.current + 1;
     if (next < ayahsRef.current.length) {
       playIndex(next);
     }
   }, [isCurrentPlaying, src, currentSrc, progress, duration, playIndex]);
 
-  // Scroll active ayah into view
   useEffect(() => {
     const node = ayahRefs.current[currentIndex];
     if (node) node.scrollIntoView({ behavior: 'smooth', block: 'center' });

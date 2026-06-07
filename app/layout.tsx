@@ -2,34 +2,25 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Tajawal, Amiri, Scheherazade_New } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
+import PrayerBar from '@/components/layout/PrayerBar';
 import Footer from '@/components/layout/Footer';
 import { ThemeProvider } from '@/components/ui/ThemeProvider';
 import { AudioManagerProvider } from '@/context/AudioManager';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin', 'latin-ext'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin', 'latin-ext'],
-});
-
+const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin', 'latin-ext'] });
+const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin', 'latin-ext'] });
 const tajawal = Tajawal({
   variable: '--font-tajawal',
   weight: ['300', '400', '500', '700'],
   subsets: ['arabic'],
   display: 'swap',
 });
-
 const amiri = Amiri({
   variable: '--font-amiri',
   weight: ['400', '700'],
   subsets: ['arabic'],
   display: 'swap',
 });
-
 const scheherazade = Scheherazade_New({
   variable: '--font-scheherazade',
   weight: ['400', '700'],
@@ -59,7 +50,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         >
           <AudioManagerProvider>
             <Navbar />
-            <main className="min-h-screen pt-16 container mx-auto relative z-10">{children}</main>
+            <PrayerBar />
+            {/* pt-24 = 16 (navbar h-16) + 8 (prayer bar h-8) */}
+            <main className="min-h-screen pt-24 container mx-auto">{children}</main>
             <Footer />
           </AudioManagerProvider>
         </ThemeProvider>

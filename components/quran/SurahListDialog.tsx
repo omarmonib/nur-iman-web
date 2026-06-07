@@ -9,15 +9,9 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import type { SurahMeta } from '@/types/quran';
 
-type SurahItem = {
-  number: number;
-  englishName: string;
-  name: string;
-  numberOfAyahs: number;
-};
-
-export default function SurahListDialog({ surahs }: { surahs: SurahItem[] }) {
+export default function SurahListDialog({ surahs }: { surahs: SurahMeta[] }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -26,7 +20,6 @@ export default function SurahListDialog({ surahs }: { surahs: SurahItem[] }) {
       <DialogContent>
         <DialogTitle>قائمة السور</DialogTitle>
         <DialogDescription>اختر سورة للانتقال إليها</DialogDescription>
-
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-auto">
           {surahs.map((s) => (
             <Link
@@ -34,9 +27,9 @@ export default function SurahListDialog({ surahs }: { surahs: SurahItem[] }) {
               href={`/quran/${s.number}`}
               className="p-2 rounded hover:bg-muted/10 text-center block"
             >
-              <div className="font-semibold">{s.englishName}</div>
+              <div className="font-semibold">{s.name}</div>
               <div className="text-sm text-muted-foreground">
-                {s.name} · {s.numberOfAyahs} آيات
+                {s.englishName} · {s.numberOfAyahs} آيات
               </div>
             </Link>
           ))}

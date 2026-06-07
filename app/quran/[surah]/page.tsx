@@ -1,8 +1,11 @@
-import QuranSurah from '@/components/quran/QuranSurah';
+import { cookies } from 'next/headers';
+import QuranSurahImages from '@/components/quran/QuranSurahImages';
 import QuranNav from '@/components/quran/QuranNav';
 import SurahListDialog from '@/components/quran/SurahListDialog';
-import { fetchSurah, fetchAllSurahs } from '@/lib/quranApi';
-import type { SurahSummary } from '@/types/quran';
+import ReciterSelector from '@/components/quran/ReciterSelector';
+import { fetchSurahMeta } from '@/lib/quranApi';
+import { DEFAULT_RECITER } from '@/lib/constants/reciters';
+import { getFirstAyahGlobalNumber } from '@/types/quran';
 import { notFound } from 'next/navigation';
 
 type Params = { surah: string };
@@ -15,9 +18,20 @@ export default async function SurahPage({ params }: { params: Params | Promise<P
 
   if (!/^[0-9]+$/.test(surahParam)) return notFound();
 
-  let data;
+  const surahNumber = parseInt(surahParam, 10);
+  if (surahNumber < 1 || surahNumber > 114) return notFound();
+
+  let reciter = DEFAULT_RECITER.key;
   try {
-    data = await fetchSurah(parseInt(surahParam, 10));
+    const cookieStore = await cookies();
+    reciter = cookieStore.get('reciter')?.value ?? DEFAULT_RECITER.key;
+  } catch {
+    // use default
+  }
+
+  let surah, allSurahs;
+  try {
+    ({ surah, allSurahs } = await fetchSurahMeta(surahNumber));
   } catch (err) {
     return (
       <div className="container mx-auto p-6">
@@ -30,33 +44,34 @@ export default async function SurahPage({ params }: { params: Params | Promise<P
     );
   }
 
-  const surah = data.data;
-  const ayahs = surah.ayahs.map((a) => ({
-    text: a.text,
-    numberInSurah: a.numberInSurah,
-    audio: a.audio,
-  }));
-
-  let surahList: SurahSummary[] = [];
-  try {
-    const all = await fetchAllSurahs();
-    surahList = all.data;
-  } catch {
-    // non-critical — dialog will render empty
-  }
-
+  const firstAyahGlobalNumber = getFirstAyahGlobalNumber(allSurahs, surahNumber);
   const prev = surah.number > 1 ? surah.number - 1 : undefined;
   const next = surah.number < 114 ? surah.number + 1 : undefined;
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-3xl font-bold text-center">
-          {surah.englishName} - {surah.name}
-        </h1>
-        <SurahListDialog surahs={surahList} />
+    <div className="container mx-auto p-6 max-w-3xl">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">{surah.name}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {surah.englishName} — {surah.numberOfAyahs} آية
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <ReciterSelector current={reciter} />
+          <SurahListDialog surahs={allSurahs} />
+        </div>
       </div>
-      <QuranSurah ayahs={ayahs} />
+
+      <QuranSurahImages
+        surahNumber={surah.number}
+        surahName={surah.name}
+        surahEnglishName={surah.englishName}
+        numberOfAyahs={surah.numberOfAyahs}
+        firstAyahGlobalNumber={firstAyahGlobalNumber}
+        reciter={reciter}
+      />
+
       <QuranNav prev={prev} next={next} />
     </div>
   );
