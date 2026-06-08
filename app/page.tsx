@@ -6,6 +6,7 @@ import QuranVerseOfDay from '@/components/home/QuranVerseOfDay';
 import HadithOfDay from '@/components/home/HadithOfDay';
 import HeroSection from '@/components/home/HeroSection';
 import LastReadSurah from '@/components/home/LastReadSurah';
+import RandomDhikr from '@/components/home/RandomDhikr';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 
 export default function HomePage() {
@@ -23,6 +24,9 @@ export default function HomePage() {
           </ErrorBoundary>
           <ErrorBoundary label="دعاء اليوم">
             <TodayDoaa />
+          </ErrorBoundary>
+          <ErrorBoundary label="ذكر عشوائي">
+            <RandomDhikr />
           </ErrorBoundary>
         </div>
 
